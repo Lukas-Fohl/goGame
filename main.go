@@ -38,10 +38,12 @@ func main() {
 	rl.InitWindow(screenWidth, screenHeight, "raylib [shapes] example - basic shapes drawing")
 
 	collObjects := []*collisionOBJ{&playerOBJ}
-	collObjects = append(collObjects, &collisionOBJ{positionX: 300, positionY: 300, radius: 10.0, color: rl.Red, typeOBJ: 2})
+	collObjects = append(collObjects, &collisionOBJ{positionX: 300, positionY: 300, radius: 20.0, color: rl.Red, typeOBJ: 2})
 	//Loop objects --> collision
 
 	var progrss float32 = 0.0
+
+	var iterations int32 = 0
 
 	defer rl.CloseWindow()
 
@@ -82,7 +84,7 @@ func main() {
 
 		//draw entities
 		for i := 0; i < len(collObjects); i++ {
-			positionUpdate(collObjects[i], progrss)
+			positionUpdate(collObjects[i], collObjects[0], progrss, iterations)
 			rl.DrawCircle(int32(collObjects[i].positionX), int32(collObjects[i].positionY), collObjects[i].radius*1.5, collObjects[i].color)
 		}
 
@@ -95,34 +97,86 @@ func main() {
 			}
 		}
 
-		progrss += 0.5
 		if progrss > 100.0 {
-			progrss = 0.0
+			iterations++
+			progrss = 0.5
+			collObjects = collObjects[:len(collObjects)-1]
+			collObjects = append(collObjects, &collisionOBJ{
+				positionX: 0.0,
+				positionY: 0.0,
+				radius:    20.0 * (1.0 + (float32(iterations) / 100.0)),
+				typeOBJ:   6, /*int16(rand.IntN(8)) + 1*/
+				color:     rl.Red,
+			})
+		}
+		switch collObjects[len(collObjects)-1].typeOBJ {
+		case 6:
+			progrss += 0.2
+		default:
+			progrss += 0.5
 		}
 
 		rl.EndDrawing()
 	}
 }
 
-func positionUpdate(inputOBJ *collisionOBJ, inputProgress float32) {
+func positionUpdate(inputOBJ *collisionOBJ, player *collisionOBJ, inputProgress float32, iterations int32) {
 	switch inputOBJ.typeOBJ {
 	case 0:
 		return
 	case 1:
-		inputOBJ.positionX = 400.0 + float32(math.Cos(float64(inputProgress))*70.0)
-		inputOBJ.positionY = 400.0 + float32(math.Sin(float64(inputProgress))*70.0)
-		return
-	case 2:
 		inputOBJ.positionX = 800 - (inputProgress*2/100)*(800)
 		inputOBJ.positionY = (inputProgress * 2 / 100) * (800)
 		return
-	case 3:
+	case 2:
 		inputOBJ.positionX = 800 - (inputProgress*2/100)*(800)
+		inputOBJ.positionY = 800 - (inputProgress*2/100)*(800)
+		return
+	case 3:
+		inputOBJ.positionX = (inputProgress * 2 / 100) * (800)
 		inputOBJ.positionY = 800 - (inputProgress*2/100)*(800)
 		return
 	case 4:
 		inputOBJ.positionX = (inputProgress * 2 / 100) * (800)
-		inputOBJ.positionY = 800 - (inputProgress*2/100)*(800)
+		inputOBJ.positionY = 400.0 + float32(math.Sin(float64(inputProgress))*40.0)
+		return
+	case 5:
+		inputOBJ.positionY = (inputProgress * 2 / 100) * (800)
+		inputOBJ.positionX = 400.0 + float32(math.Sin(float64(inputProgress))*40.0)
+		return
+	case 6:
+		inputOBJ.color = rl.Green
+		/*
+			yDiffn**2 + xDiffn**2 = 25
+			xDiff / yDiff = relation
+			xDiff = relation * yDiff
+			yDiffn**2 + (relation * yDiff) = 25
+			xDiffn**2 = 25 - ydiffn**2
+		*/
+		xDiff := player.positionX - inputOBJ.positionX
+		yDiff := player.positionY - inputOBJ.positionY
+		relation := float32(math.Abs(float64(xDiff / yDiff)))
+		if relation > 1 {
+			relation = 1
+		} else if relation < -1 {
+			relation = -1
+		}
+
+		if xDiff > 0 {
+			inputOBJ.positionX += float32(relation * 5.0 * float32(1+(iterations/100)))
+		} else {
+			inputOBJ.positionX -= float32(relation * 5.0 * float32(1+(iterations/100)))
+		}
+
+		if yDiff > 0 {
+			inputOBJ.positionY += float32(5 * (1 + (iterations / 100)))
+		} else {
+			inputOBJ.positionY -= float32(5 * (1 + (iterations / 100)))
+		}
+		if inputProgress > 98.0 {
+			inputOBJ.positionX = -100
+			inputOBJ.positionY = -100
+		}
 		return
 	default:
 		inputOBJ.positionX = (inputProgress * 1 / 100) * (800)
