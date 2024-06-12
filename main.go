@@ -2,6 +2,7 @@ package main
 
 import (
 	"math"
+	"math/rand/v2"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -18,7 +19,9 @@ func getCollision(collider1 collisionOBJ, collider2 collisionOBJ) bool {
 	xDiff := float32(math.Abs(float64(collider1.positionX) - float64(collider2.positionX)))
 	yDiff := float32(math.Abs(float64(collider1.positionY) - float64(collider2.positionY)))
 	if xDiff < (collider1.radius+collider2.radius) && yDiff < (collider1.radius+collider2.radius) {
-		return true
+		if collider1.typeOBJ == 0 || collider2.typeOBJ == 0 {
+			return true
+		}
 	}
 	return false
 }
@@ -100,20 +103,47 @@ func main() {
 		if progrss > 100.0 {
 			iterations++
 			progrss = 0.5
-			collObjects = collObjects[:len(collObjects)-1]
-			collObjects = append(collObjects, &collisionOBJ{
-				positionX: 0.0,
-				positionY: 0.0,
-				radius:    20.0 * (1.0 + (float32(iterations) / 100.0)),
-				typeOBJ:   6, /*int16(rand.IntN(8)) + 1*/
-				color:     rl.Red,
-			})
+			for i := 0; i < len(collObjects)-1; i++ {
+				collObjects = collObjects[:len(collObjects)-1]
+			}
+			var typeNum int16 = int16(rand.IntN(8)) + 1
+			switch typeNum {
+			case 7:
+				collObjects = append(collObjects, &collisionOBJ{
+					positionX: 0.0,
+					positionY: 0.0,
+					radius:    20.0 * (1.0 + (float32(iterations) / 100.0)),
+					typeOBJ:   2,
+					color:     rl.Red,
+				})
+				collObjects = append(collObjects, &collisionOBJ{
+					positionX: 0.0,
+					positionY: 800.0,
+					radius:    20.0 * (1.0 + (float32(iterations) / 100.0)),
+					typeOBJ:   3,
+					color:     rl.Red,
+				})
+			default:
+				collObjects = append(collObjects, &collisionOBJ{
+					positionX: 0.0,
+					positionY: 0.0,
+					radius:    20.0 * (1.0 + (float32(iterations) / 100.0)),
+					typeOBJ:   typeNum,
+					color:     rl.Red,
+				})
+			}
 		}
-		switch collObjects[len(collObjects)-1].typeOBJ {
-		case 6:
-			progrss += 0.2
-		default:
-			progrss += 0.5
+		for i := 0; i < len(collObjects); i++ {
+			switch collObjects[len(collObjects)-1].typeOBJ {
+			case 0:
+				continue
+			case 6:
+				progrss += 0.2
+				break
+			default:
+				progrss += 0.3
+				break
+			}
 		}
 
 		rl.EndDrawing()
