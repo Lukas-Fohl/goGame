@@ -3,6 +3,7 @@ package main
 import (
 	"math"
 	"math/rand/v2"
+	"strconv"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -38,7 +39,7 @@ func main() {
 	playerOBJ := collisionOBJ{positionX: 200, positionY: 200, radius: playerSize, color: rl.Blue, typeOBJ: 0}
 	getCollision(playerOBJ, playerOBJ)
 
-	rl.InitWindow(screenWidth, screenHeight, "raylib [shapes] example - basic shapes drawing")
+	rl.InitWindow(screenWidth, screenHeight, "omwtfyb")
 
 	collObjects := []*collisionOBJ{&playerOBJ}
 	collObjects = append(collObjects, &collisionOBJ{positionX: 300, positionY: 300, radius: 20.0, color: rl.Red, typeOBJ: 2})
@@ -51,6 +52,21 @@ func main() {
 	defer rl.CloseWindow()
 
 	rl.SetTargetFPS(60)
+
+	var skullImage rl.Image = *rl.LoadImage("./skull.png")
+	rl.ImageResize(&skullImage, 50, 55)
+	var skullTexture rl.Texture2D = rl.LoadTextureFromImage(&skullImage)
+	rl.UnloadImage(&skullImage)
+
+	var faceImage rl.Image = *rl.LoadImage("./face.png")
+	rl.ImageResize(&faceImage, 45, 45)
+	var faceTexture rl.Texture2D = rl.LoadTextureFromImage(&faceImage)
+	rl.UnloadImage(&faceImage)
+
+	var ghostImage rl.Image = *rl.LoadImage("./ghost.png")
+	rl.ImageResize(&ghostImage, 50, 50)
+	var ghostTexture rl.Texture2D = rl.LoadTextureFromImage(&ghostImage)
+	rl.UnloadImage(&ghostImage)
 
 	for !rl.WindowShouldClose() {
 		rl.BeginDrawing()
@@ -88,7 +104,15 @@ func main() {
 		//draw entities
 		for i := 0; i < len(collObjects); i++ {
 			positionUpdate(collObjects[i], collObjects[0], progrss, iterations)
-			rl.DrawCircle(int32(collObjects[i].positionX), int32(collObjects[i].positionY), collObjects[i].radius*1.5, collObjects[i].color)
+			//rl.DrawCircle(int32(collObjects[i].positionX), int32(collObjects[i].positionY), collObjects[i].radius*1.5, collObjects[i].color)
+			switch collObjects[i].typeOBJ {
+			case 0:
+				rl.DrawTexture(faceTexture, int32(collObjects[i].positionX)-(faceTexture.Width/2), int32(collObjects[i].positionY)-(faceTexture.Height/2), rl.White)
+			case 6:
+				rl.DrawTexture(skullTexture, int32(collObjects[i].positionX)-(skullTexture.Width/2), int32(collObjects[i].positionY)-(skullTexture.Height/2), rl.White)
+			default:
+				rl.DrawTexture(ghostTexture, int32(collObjects[i].positionX)-(ghostTexture.Width/2), int32(collObjects[i].positionY)-(ghostTexture.Height/2), rl.White)
+			}
 		}
 
 		//collision check
@@ -100,10 +124,13 @@ func main() {
 			}
 		}
 
+		rl.DrawText("iterations:\t"+strconv.Itoa(int(iterations)), 50, 50, 20, rl.White)
+		rl.DrawText("progress:\t"+strconv.Itoa(int(progrss))+"%", 600, 50, 20, rl.White)
+
 		if progrss > 100.0 {
 			iterations++
 			progrss = 0.5
-			for i := 0; i < len(collObjects)-1; i++ {
+			for i := 0; i < len(collObjects); i++ {
 				collObjects = collObjects[:len(collObjects)-1]
 			}
 			var typeNum int16 = int16(rand.IntN(8)) + 1
@@ -141,10 +168,11 @@ func main() {
 				progrss += 0.2
 				break
 			default:
-				progrss += 0.3
+				progrss += 0.2
 				break
 			}
 		}
+		progrss += float32(iterations) / 100
 
 		rl.EndDrawing()
 	}
@@ -176,13 +204,6 @@ func positionUpdate(inputOBJ *collisionOBJ, player *collisionOBJ, inputProgress 
 		return
 	case 6:
 		inputOBJ.color = rl.Green
-		/*
-			yDiffn**2 + xDiffn**2 = 25
-			xDiff / yDiff = relation
-			xDiff = relation * yDiff
-			yDiffn**2 + (relation * yDiff) = 25
-			xDiffn**2 = 25 - ydiffn**2
-		*/
 		xDiff := player.positionX - inputOBJ.positionX
 		yDiff := player.positionY - inputOBJ.positionY
 		relation := float32(math.Abs(float64(xDiff / yDiff)))
@@ -203,14 +224,10 @@ func positionUpdate(inputOBJ *collisionOBJ, player *collisionOBJ, inputProgress 
 		} else {
 			inputOBJ.positionY -= float32(5 * (1 + (iterations / 100)))
 		}
-		if inputProgress > 98.0 {
-			inputOBJ.positionX = -100
-			inputOBJ.positionY = -100
-		}
 		return
 	default:
-		inputOBJ.positionX = (inputProgress * 1 / 100) * (800)
-		inputOBJ.positionY = (inputProgress * 1 / 100) * (800)
+		inputOBJ.positionX = (inputProgress * 2 / 100) * (800)
+		inputOBJ.positionY = (inputProgress * 2 / 100) * (800)
 		return
 	}
 }
