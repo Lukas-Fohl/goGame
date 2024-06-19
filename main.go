@@ -27,10 +27,10 @@ func getCollision(collider1 collisionOBJ, collider2 collisionOBJ) bool {
 	return false
 }
 
-func main() {
-	screenWidth := int32(800)
-	screenHeight := int32(800)
+const screenHeight = int32(1000)
+const screenWidth = int32(1000)
 
+func main() {
 	var playerSize float32 = 10.0
 
 	var sideOffset int32 = 120
@@ -42,7 +42,7 @@ func main() {
 	rl.InitWindow(screenWidth, screenHeight, "omwtfyb")
 
 	collObjects := []*collisionOBJ{&playerOBJ}
-	collObjects = append(collObjects, &collisionOBJ{positionX: 300, positionY: 300, radius: 20.0, color: rl.Red, typeOBJ: 2})
+	collObjects = append(collObjects, &collisionOBJ{positionX: 0, positionY: 0, radius: 20.0, color: rl.Red, typeOBJ: 2})
 	//Loop objects --> collision
 
 	var progrss float32 = 0.0
@@ -125,7 +125,7 @@ func main() {
 		}
 
 		rl.DrawText("iterations:\t"+strconv.Itoa(int(iterations)), 50, 50, 20, rl.White)
-		rl.DrawText("progress:\t"+strconv.Itoa(int(progrss))+"%", 600, 50, 20, rl.White)
+		rl.DrawText("progress:\t"+strconv.Itoa(int(progrss))+"%", screenWidth-200, 50, 20, rl.White)
 
 		if progrss > 100.0 {
 			iterations++
@@ -179,28 +179,29 @@ func main() {
 }
 
 func positionUpdate(inputOBJ *collisionOBJ, player *collisionOBJ, inputProgress float32, iterations int32) {
+
 	switch inputOBJ.typeOBJ {
 	case 0:
 		return
 	case 1:
-		inputOBJ.positionX = 800 - (inputProgress*2/100)*(800)
-		inputOBJ.positionY = (inputProgress * 2 / 100) * (800)
+		inputOBJ.positionX = float32(screenWidth) - (inputProgress*2/100)*(float32(screenWidth))
+		inputOBJ.positionY = (inputProgress * 2 / 100) * (float32(screenHeight))
 		return
 	case 2:
-		inputOBJ.positionX = 800 - (inputProgress*2/100)*(800)
-		inputOBJ.positionY = 800 - (inputProgress*2/100)*(800)
+		inputOBJ.positionX = float32(screenWidth) - (inputProgress*2/100)*(float32(screenWidth))
+		inputOBJ.positionY = float32(screenHeight) - (inputProgress*2/100)*(float32(screenHeight))
 		return
 	case 3:
-		inputOBJ.positionX = (inputProgress * 2 / 100) * (800)
-		inputOBJ.positionY = 800 - (inputProgress*2/100)*(800)
+		inputOBJ.positionX = (inputProgress * 2 / 100) * (float32(screenWidth))
+		inputOBJ.positionY = float32(screenHeight) - (inputProgress*2/100)*(float32(screenHeight))
 		return
 	case 4:
-		inputOBJ.positionX = (inputProgress * 2 / 100) * (800)
-		inputOBJ.positionY = 400.0 + float32(math.Sin(float64(inputProgress))*40.0)
+		inputOBJ.positionX = (inputProgress * 2 / 100) * (float32(screenWidth))
+		inputOBJ.positionY = float32(screenHeight)/2 + float32(math.Sin(float64(inputProgress))*40.0)
 		return
 	case 5:
-		inputOBJ.positionY = (inputProgress * 2 / 100) * (800)
-		inputOBJ.positionX = 400.0 + float32(math.Sin(float64(inputProgress))*40.0)
+		inputOBJ.positionX = float32(screenWidth)/2 + float32(math.Sin(float64(inputProgress))*40.0)
+		inputOBJ.positionY = (inputProgress * 2 / 100) * (float32(screenHeight))
 		return
 	case 6:
 		inputOBJ.color = rl.Green
@@ -226,8 +227,8 @@ func positionUpdate(inputOBJ *collisionOBJ, player *collisionOBJ, inputProgress 
 		}
 		return
 	default:
-		inputOBJ.positionX = (inputProgress * 2 / 100) * (800)
-		inputOBJ.positionY = (inputProgress * 2 / 100) * (800)
+		inputOBJ.positionX = (inputProgress * 2 / 100) * (float32(screenWidth))
+		inputOBJ.positionY = (inputProgress * 2 / 100) * (float32(screenHeight))
 		return
 	}
 }
